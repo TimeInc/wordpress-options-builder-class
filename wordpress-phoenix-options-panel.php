@@ -267,28 +267,22 @@ class Panel {
 	 * Print WordPress Admin Notifications
 	 *
 	 * @example $note_data = array( 'notification' => 'My text', 'type' => 'notice-success' )
+	 *
+	 * @return string
 	 */
 	public function echo_notifications() {
-		$allowed_tags = wp_kses_allowed_html( 'post' );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'div' => [
-				'class' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'p' => [],
-		] );
-
+		$output = '';
 		foreach ( $this->notifications as $note_data ) {
 			$data         = is_array( $note_data ) ? $note_data : [ 'notification' => $note_data ];
 			$data['type'] = isset( $data['type'] ) ? $data['type'] : 'notice-success';
-			echo wp_kses( HTML::tag(
+			$output .= HTML::tag(
 				'div',
 				[ 'class' => 'notice ' . $data['type'] ],
 				HTML::tag( 'p', [], $data['notification'] )
-			), $allowed_tags );
+			);
 		}
+
+		return $output;
 	}
 
 	/**
@@ -384,95 +378,21 @@ class Page extends Panel {
 		$page_icon    = ! empty( $this->dashicon ) ? HTML::dashicon( $this->dashicon . ' page-icon' ) . ' ' : '';
 		$screen       = get_current_screen();
 		$screen_id    = $screen->id;
-		$allowed_tags = wp_kses_allowed_html( 'post' );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'h1' => [],
-		] );
+		$output 	  = '';
 
-		$allowed_tags = array_merge( $allowed_tags, [
-			'code' => [],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'ul' => [
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'li' => [
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'a' => [
-				'href'  => 1,
-				'class' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'div' => [
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'section' => [
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'header' => [
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'h2' => [
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'input' => [
-				'type'  => 1,
-				'name'  => 1,
-				'value' => 1,
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'form' => [
-				'method' => 1,
-				'class'  => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'footer' => [
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
 
 		add_action( 'admin_print_footer_scripts-' . $screen_id, function () {
 			$this->footer_scripts();
 		} );
 		if ( 'site' !== $this->api && 'network' !== $this->api && ! is_object( $this->panel_object ) ) {
-			echo wp_kses( '<h1>Please select a ' . $this->api . '.</h1>', $allowed_tags );
-			echo wp_kses( '<code>?' . $this->api . '=ID</code>', $allowed_tags );
-			exit;
+			$output .= '<h1>Please select a ' . $this->api . '.</h1>';
+			$output .= '<code>?' . $this->api . '=ID</code>';
+
+			return $output;
 		}
+		/**
+		 * !! CONTENTS OF THIS BUFFER ARE LATE-ESCAPED AT THE END -- ADD TO KSES IF NEEDED !!
+		 */
 		ob_start(); ?>
 		<div id="wpopOptions">
 			<?php
@@ -493,7 +413,7 @@ class Page extends Panel {
 				<form method="post" class="pure-form wpop-form">
 					<header class="wpop-head">
 						<div class="inner">
-							<?php echo wp_kses( HTML::tag( 'h1', [], $page_icon . $this->page_title ), $allowed_tags ); ?>
+							<?php echo HTML::tag( 'h1', [], $page_icon . $this->page_title ); ?>
 							<input type="submit"
 								   class="button button-primary button-hero save-all"
 								   value="Save All"
@@ -501,9 +421,11 @@ class Page extends Panel {
 						</div>
 					</header>
 					<?php
+					// TODO: YO TEST ME PLS THX
 					$submit = filter_input( INPUT_POST, 'submit' );
 					if ( isset( $submit ) && $submit ) {
-						$this->echo_notifications();
+						// TODO: kses this line
+						echo $this->echo_notifications();
 					}
 					?>
 					<div id="wpopContent" class="pure-g">
@@ -515,7 +437,8 @@ class Page extends Panel {
 										$section_icon = ! empty( $section['dashicon'] ) ?
 											HTML::dashicon( $section['dashicon'] . ' menu-icon' ) : '';
 										$pcount       = count( $section['parts'] ) > 1 ? HTML::tag( 'small', [ 'class' => 'part-count' ], count( $section['parts'] ) ) : '';
-										echo wp_kses( HTML::tag(
+										// TODO: kses this line
+										echo HTML::tag(
 											'li',
 											[
 												'id'    => $section_id . '-nav',
@@ -525,19 +448,19 @@ class Page extends Panel {
 												'href'  => '#' . $section_id,
 												'class' => 'pure-menu-link',
 											], $section_icon . $section['label'] . $pcount )
-										), $allowed_tags );
+										);
 									}
 									?>
 								</ul>
 							</div>
-							<?php echo wp_kses( wp_nonce_field( $this->id, '_wpnonce', true, false ), $allowed_tags ); ?>
+							<?php echo wp_nonce_field( $this->id, '_wpnonce', true, false ); ?>
 						</div>
 						<div id="wpopMain" class="pure-u-1 pure-u-md-18-24">
 							<ul id="wpopOptNavUl" style="list-style: none;">
 								<?php
 								foreach ( $this->parts as $section_key => $section ) {
 									$built_section = new Section( $section_key, $section );
-									$built_section->echo_html();
+									echo $built_section->echo_html();
 								}
 								?>
 							</ul>
@@ -548,13 +471,13 @@ class Page extends Panel {
 									<div>
 										<ul>
 											<li>
-												Sections: <?php echo wp_kses( HTML::tag( 'code', [], $this->section_count ), $allowed_tags ); ?></li>
+												Sections: <?php echo HTML::tag( 'code', [], $this->section_count ); ?></li>
 											<li>Total Data
-												Parts: <?php echo wp_kses( HTML::tag( 'code', [], $this->data_count ), $allowed_tags ); ?></li>
+												Parts: <?php echo HTML::tag( 'code', [], $this->data_count ); ?></li>
 											<li>Total
-												Parts: <?php echo wp_kses( HTML::tag( 'code', [], $this->part_count ), $allowed_tags ); ?></li>
+												Parts: <?php echo HTML::tag( 'code', [], $this->part_count ); ?></li>
 											<li>Stored
-												in: <?php echo wp_kses( HTML::tag( 'code', [], $this->get_storage_table() ), $allowed_tags ); ?></li>
+												in: <?php echo HTML::tag( 'code', [], $this->get_storage_table() ); ?></li>
 										</ul>
 									</div>
 								</div>
@@ -573,23 +496,14 @@ class Page extends Panel {
 			</section>
 		</div> <!-- end #wpopOptions -->
 		<?php
-		echo wp_kses( ob_get_clean(), $allowed_tags );
+		// TODO: kses this pls -- THIS IS THE MAIN ONE :)
+		echo ob_get_clean();
 	}
 
 	/**
 	 *
 	 */
 	public function inline_styles_and_scripts() {
-		$allowed_tags = wp_kses_allowed_html( 'post' );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'style' => [],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'script' => [
-				'type' => 1,
-			],
-		] );
 
 		ob_start();
 		?>
@@ -1231,63 +1145,10 @@ class Page extends Panel {
 		</script>
 		<?php
 		$js = ob_get_clean();
-		echo wp_kses( PHP_EOL . $css . PHP_EOL . $js . PHP_EOL, $allowed_tags );
+		echo PHP_EOL . $css . PHP_EOL . $js . PHP_EOL;
 	}
 
 	public function footer_scripts() {
-		$allowed_tags = wp_kses_allowed_html( 'post' );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'span' => [
-				'class'         => 1,
-				'data-dashicon' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'style' => [],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'script' => [
-				'type' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'div' => [
-				'class' => 1,
-				'id'    => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'table' => [
-				'class' => 1,
-			],
-			'thead' => [],
-			'tbody' => [],
-			'tr'    => [],
-			'td'    => [
-				'colspan' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'a' => [
-				'href'  => 1,
-				'class' => 1,
-				'style' => 1,
-			],
-		] );
-
-		$allowed_tags = array_merge( $allowed_tags, [
-			'img' => [
-				'src'   => 1,
-				'class' => 1,
-			],
-		] );
-
 		ob_start();
 		?>
 		<script type="text/html" id="tmpl-wpop-media-stats">
@@ -1296,7 +1157,7 @@ class Page extends Panel {
 					<table class="widefat striped">
 						<thead>
 						<tr>
-							<td colspan="2"><?php echo wp_kses( HTML::dashicon( 'dashicons-format-image' ), $allowed_tags ); ?>
+							<td colspan="2"><?php echo HTML::dashicon( 'dashicons-format-image' ); ?>
 								<a href="{{{ data.url }}}">{{{ data.filename }}}</a>
 								<a href="{{{ data.editLink }}}" class="button" style="float:right;">Edit Image</a>
 							</td>
@@ -1326,12 +1187,12 @@ class Page extends Panel {
 
 		</script>
 		<script type="text/javascript">
-					jQuery( document ).ready( function ( $ ) {
-						wp.hooks.doAction( 'wpopFooterScripts' );
-					} );
+			jQuery( document ).ready( function ( $ ) {
+				wp.hooks.doAction( 'wpopFooterScripts' );
+			} );
 		</script>
 		<?php
-		echo wp_kses( PHP_EOL . ob_get_clean() . PHP_EOL, $allowed_tags );
+		echo PHP_EOL . ob_get_clean() . PHP_EOL;
 	}
 
 	/**
@@ -1433,17 +1294,10 @@ class Section {
 
 	/**
 	 * Print Panel Markup
+	 * TODO: I need a new name that reflects my new identity
 	 */
 	public function echo_html() {
 		ob_start();
-
-		$allowed_tags = wp_kses_allowed_html( 'post' );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'li' => [
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
 
 		$section_content = '';
 
@@ -1451,12 +1305,12 @@ class Section {
 			$section_content .= $part->get_html() . HTML::tag( 'span', [ 'class' => 'spacer' ] );
 		}
 
-		echo wp_kses( HTML::tag( 'li', [
+		echo HTML::tag( 'li', [
 			'id'    => $this->id,
 			'class' => implode( ' ', $this->classes ),
-		], HTML::tag( 'ul', [], $section_content ) ), $allowed_tags );
+		], HTML::tag( 'ul', [], $section_content ) );
 
-		echo wp_kses( ob_get_clean(), $allowed_tags );
+		return ob_get_clean();
 	}
 }
 
@@ -1920,20 +1774,10 @@ class Select extends Part {
 	public function get_html() {
 		$default_option = isset( $this->meta['option_default'] ) ? $this->meta['option_default'] : 'Select an option';
 
-		$allowed_tags = wp_kses_allowed_html( 'post' );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'select' => [
-				'option' => 1,
-				'value'  => 1,
-				'id'     => 1,
-				'name'   => 1,
-			],
-		] );
-
 		ob_start();
 
 		if ( $this->empty_default ) {
-			echo wp_kses( HTML::tag( 'option', [ 'value' => '' ] ), $allowed_tags );
+			echo HTML::tag( 'option', [ 'value' => '' ] );
 		}
 
 		foreach ( $this->values as $value => $label ) {
@@ -1941,7 +1785,7 @@ class Select extends Part {
 			if ( $value === $this->get_saved() ) {
 				$option['selected'] = 'selected';
 			}
-			echo wp_kses( HTML::tag( 'option', $option, $label ), $allowed_tags );
+			echo HTML::tag( 'option', $option, $label );
 		}
 
 		return $this->build_base_markup(
@@ -2166,32 +2010,8 @@ class Media extends Part {
 			$insert_label = 'Replace ' . $this->media_label;
 		}
 
-		$allowed_tags = wp_kses_allowed_html( 'post' );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'input' => [
-				'type'  => 1,
-				'name'  => 1,
-				'value' => 1,
-				'id'    => 1,
-				'class' => 1,
-			],
-		] );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'a' => [
-				'href'             => 1,
-				'data-media-label' => 1,
-				'class'            => 1,
-			],
-		] );
-		$allowed_tags = array_merge( $allowed_tags, [
-			'div' => [
-				'style' => 1,
-				'class' => 1,
-			],
-		] );
-
 		ob_start();
-		echo wp_kses( '<div class="blank-img" style="display:none;">' . $empty . '</div>', $allowed_tags );
+		echo '<div class="blank-img" style="display:none;">' . $empty . '</div>';
 
 		$image_btn = [
 			'id'               => $this->id . '_button',
@@ -2218,15 +2038,15 @@ class Media extends Part {
 			}
 		}
 
-		echo wp_kses( HTML::tag( 'input', $image_btn ), $allowed_tags );
-		echo wp_kses( HTML::tag( 'input', $hidden ), $allowed_tags );
-		echo wp_kses( HTML::tag( 'a',
+		echo HTML::tag( 'input', $image_btn );
+		echo HTML::tag( 'input', $hidden );
+		echo HTML::tag( 'a',
 			[
 				'href'             => '#',
 				'class'            => 'button button-secondary img-remove',
 				'data-media-label' => $this->media_label,
 			], 'Remove ' . $this->media_label
-		), $allowed_tags );
+		);
 
 		return $this->build_base_markup( ob_get_clean() );
 	}
