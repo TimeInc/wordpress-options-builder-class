@@ -411,7 +411,7 @@ class Page extends Panel {
 		 * !! CONTENTS OF THIS BUFFER ARE LATE-ESCAPED AT THE END -- ADD TO KSES IF NEEDED !!
 		 */
 		if ( ! $this->disable_styles ) {
-			$this->inline_styles_and_scripts();
+			echo $this->inline_styles_and_scripts();
 		}
 		ob_start(); ?>
 		<div id="wpopOptions">
